@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<overlay id="ASmessengerOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script type="application/javascript" src="chrome://AutoSlide/content/ASmessengerOverlay.js"/>
+
+<tree id="threadTree">
+<!--
+  <treechildren id="threadTree"
+                onoverflow="alert('test1');"
+                onunderflow="alert('test2');"/>
+-->
+</tree>
+
+<vbox id="messagepanebox" flex="0"/>
+
+</overlay>

@@ -1,0 +1,90 @@
+<?xml version="1.0" ?>
+
+<project name="AutoSlide" default="dist">
+  <property name="src.dir" value="." />
+  <property name="dist.dir" value="../downloads/"/>
+  <property name="AMOdist.dir" value="../AMO/"/>
+  <property name="www.dir" value="../www/"/>
+  <property name="mccoy.cmd" value='c:/Program Files (x86)/mccoy/mccoy.exe'/>
+
+  <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask"/>
+
+  <xmltask source="./install.rdf">
+    <copy path="//em:version/text()" property="app.version"/>   
+    <copy path="//em:name/text()" property="app.name"/>   
+    <copy path="//em:id/text()" property="app.id"/>   
+  </xmltask>
+
+  <target name="dist" depends="spreadVersion,buildAMO,buildMozdev">
+
+  </target>
+
+  <target name="clean">
+    <delete file="${dist.dir}/${app.name}-${app.version}.xpi" />
+  </target>
+
+
+  <target name="buildAMO">
+    <copy file="${src.dir}/install.rdf" tofile="${AMOdist.dir}/install.rdf"/>
+    <replaceregexp file="${AMOdist.dir}/install.rdf" 
+                   byline="true"
+                   match=".*update.*"
+                   replace=""/>                   
+    <zip destfile="${AMOdist.dir}/${app.name}-${app.version}.xpi">
+      <fileset dir="${src.dir}">
+        <include name="chrome.manifest" />
+        <include name="defaults/**" />
+        <include name="chrome/**" />        
+        <exclude name="**/.*" />
+        <exclude name="**/CVS/**" />
+      </fileset>
+      <fileset dir="${AMOdist.dir}">
+        <include name="install.rdf" />
+      </fileset>
+    </zip>
+  </target>
+
+  <target name="buildMozdev">
+    <zip destfile="${dist.dir}/${app.name}-${app.version}.xpi">
+      <fileset dir="${src.dir}">
+        <include name="chrome.manifest" />
+        <include name="install.rdf" />
+        <include name="defaults/**" />
+        <include name="chrome/**" />        
+        <exclude name="**/.*" />
+        <exclude name="**/CVS/**" />
+      </fileset>
+    </zip>
+    <xmltask source="${www.dir}/update.rdf" dest="${www.dir}/update.rdf.new">
+      <replace path="/RDF:RDF/RDF:Description/@em:version" withText="${app.version}"/> 
+      <replace path="/RDF:RDF/RDF:Description/@em:updateLink" withText="http://downloads.mozdev.org/autoslide/AutoSlide-${app.version}.xpi"/> 
+    </xmltask>
+    <move file="${www.dir}/update.rdf.new" tofile="${www.dir}/update.rdf"/>
+    <property name="absUpdate" location="${www.dir}/update.rdf"/>
+    <property name="absXPI" location="${dist.dir}/${app.name}-${app.version}.xpi"/>
+    
+    <echo message="absUpdate ${absUpdate}"/>
+    <echo message="absUpdate ${absXPI}"/>
+    
+    <exec executable="${mccoy.cmd}">
+      <arg value="-command"/>
+      <arg value="update"/>
+      <arg value="-updateRDF"/>
+      <arg value="${absUpdate}"/>
+      <arg value="-key"/>
+      <arg value="compactheaderkey"/>
+      <arg value="-xpi"/>
+      <arg value="${absXPI}"/>
+    </exec>
+  </target>
+
+  <target name="spreadVersion">
+    <echo message="new version: ${app.version}"/>
+    <replaceregexp file="${www.dir}/installation.html" 
+                   byline="true"
+                   match="(.*update the version.*AutoSlide-).*(.xpi&quot;>Version ).*( of Auto.*)"
+                   replace="\1${app.version}\2${app.version}\3"/>
+
+  </target>  
+
+</project>
