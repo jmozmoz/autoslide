@@ -11,6 +11,9 @@
                 onunderflow="alert('test2');"/>
 -->
 </tree>
+
+<!--
 <splitter id="threadpane-splitter" ondblclick="org.mozdev.AutoSlide.slider.slide();"/>
+ -->
 
 </overlay>

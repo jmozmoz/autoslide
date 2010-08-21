@@ -54,15 +54,15 @@ org.mozdev.AutoSlide.slider = function() {
   function debugLog(str) {
     aConsoleService.logStringMessage(Date() + " AS: " + str);
   }
-  
+
   pub.init = function () {
     var mailSession = Components.classes["@mozilla.org/messenger/services/session;1"]
                                 .getService(Components.interfaces.nsIMsgMailSession);
     var nsIFolderListener = Components.interfaces.nsIFolderListener;
-    mailSession.AddFolderListener(folderListener, nsIFolderListener.removed | 
+    mailSession.AddFolderListener(folderListener, nsIFolderListener.removed |
                                                   nsIFolderListener.added |
                                                   nsIFolderListener.event);
-    
+
     var quickFilterBar = document.getElementById("quick-filter-bar");
     quickFilterBar.addEventListener("DOMAttrModified", onCollapseChange, false);
 
@@ -72,14 +72,24 @@ org.mozdev.AutoSlide.slider = function() {
     var observerService = Components.classes["@mozilla.org/observer-service;1"]
                                   .getService(Components.interfaces.nsIObserverService);
     observerService.addObserver(msgObserver, "MsgMsgDisplayed", false);
-    
+
     myPrefObserver.register();
 
-    /*
     var threadTree = document.getElementById("threadTree");
-    threadTree.addEventListener("DOMAttrModified", onThreadTreeChange, false);
+    threadTree.setAttribute("onclick",
+        threadTree.getAttribute("onclick") + ";org.mozdev.AutoSlide.slider.slide();");
+    threadTree.setAttribute("onkeypress",
+        threadTree.getAttribute("onkeypress") + ";org.mozdev.AutoSlide.slider.delayedSlide();");
+
+    var threadPaneSplitter = document.getElementById("threadpane-splitter");
+    threadPaneSplitter.setAttribute("ondblclick",
+        threadPaneSplitter.getAttribute("ondblclick") + ";org.mozdev.AutoSlide.slider.slide();");
+/*    threadTree.addEventListener("DOMAttrModified", onThreadTreeChange, false);
 */
-    org.mozdev.AutoSlide.slider.slide();  
+    
+    var timeoutID;
+    
+    org.mozdev.AutoSlide.slider.slide();
   }
 
   var msgObserver = {
@@ -88,7 +98,7 @@ org.mozdev.AutoSlide.slider = function() {
       org.mozdev.AutoSlide.slider.slide();
     }
   }
-  
+
   function onCollapseChange(event) {
     if (event.attrName == "collapsed") {
       debugLog("onCollapseChange " + event.attrName);
@@ -100,20 +110,29 @@ org.mozdev.AutoSlide.slider = function() {
     debugLog("onThreadTreeChange " + event.attrName);
   };
 
+  pub.delayedSlide = function () {
+    debugLog("delayedSlide");
+    timeoutID = window.setTimeout(org.mozdev.AutoSlide.slider.slide, 500);
+  }
+
   pub.slide = function() {
+    window.clearTimeout(timeoutID);
     var currentTabInfo = document.getElementById("tabmail").currentTabInfo;
     if ((currentTabInfo.mode.name != "folder") &&
         (currentTabInfo.mode.name != "glodaList")) {
       //debugLog("not in folder");
       return;
     }
-
-    var test = gFolderDisplay.displayedFolder;
-    var tree = document.getElementById("threadTree");
-    var treeBox = tree.boxObject;
     if (gDBView==null) {
       return;
     }
+
+    //var test = gFolderDisplay.displayedFolder;
+    var tree = document.getElementById("threadTree");
+    var treeBox = tree.boxObject;
+    var treeView = gDBView.QueryInterface(Components.interfaces.nsITreeView);
+    }
+
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
     var threadPaneSplitterBox = threadPaneSplitter.boxObject;
 
@@ -127,19 +146,19 @@ org.mozdev.AutoSlide.slider = function() {
     //debugLog(treeBox.getPageLength() + " of " + count);
 
     var minHeightPercent = ASPrefBranch.getIntPref("maxThreadPanePercentage");
-    
+
     var requiredHeight = treeBox.rowHeight * count;
     var setHeight;
-    
+
     var oldHeight = treeBox.height - document.getElementById("threadCols").boxObject.height - 1;
     var displayDeck = document.getElementById("displayDeck");
     var oldDisplayDeckHeight = displayDeck.boxObject.height;
     //debugLog("oldHeight: "+oldHeight);
-    var deltaHeight = requiredHeight - oldHeight;    
+    var deltaHeight = requiredHeight - oldHeight;
 
     var messagesBoxBox = document.getElementById("messagesBox").boxObject;
     var messagePaneBox = document.getElementById("messagepanebox");
-    
+
     var newSplitterDeltaY = threadPaneSplitterBox.y -
                             messagesBoxBox.y +
                             deltaHeight;
@@ -153,24 +172,24 @@ org.mozdev.AutoSlide.slider = function() {
       deltaHeight = deltaHeight + (minSplitterY - newSplitterDeltaY);
     }
     //debugLog("delta: "+deltaHeight);
-    
 
-    var anotherDelta = oldDisplayDeckHeight + deltaHeight - displayDeck.getAttribute("minheight"); 
+
+    var anotherDelta = oldDisplayDeckHeight + deltaHeight - displayDeck.getAttribute("minheight");
     if (anotherDelta < 0) {
       deltaHeight = deltaHeight - anotherDelta;
     }
 
     var newHeight = oldHeight - deltaHeight;
     //debugLog("old: "+oldHeight + " new: "+newHeight);
-    
+
     messagePaneBox.setAttribute("height", newHeight);
     displayDeck.setAttribute("height", displayDeck.boxObject.height);
-    
+
     document.getElementById("messagepanebox").setAttribute("flex", "1");
   };
-  
+
   var folderListener = {
-      
+
     OnItemAdded: function(aParentItem, aItem) {
       var currentFolder = gFolderTreeView.getSelectedFolders()[0];
       if (aParentItem == currentFolder) {
@@ -199,33 +218,33 @@ org.mozdev.AutoSlide.slider = function() {
       // First we'll need the preference services to look for preferences.
       var prefService = Components.classes["@mozilla.org/preferences-service;1"]
                                   .getService(Components.interfaces.nsIPrefService);
-  
+
       // For this._branch we ask that the preferences for extensions.myextension. and children
       this._branch = prefService.getBranch("extensions.AutoSlide.");
-  
-      // Now we queue the interface called nsIPrefBranch2. This interface is described as:  
+
+      // Now we queue the interface called nsIPrefBranch2. This interface is described as:
       // "nsIPrefBranch2 allows clients to observe changes to pref values."
       this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
-  
+
       // Finally add the observer.
       this._branch.addObserver("", this, false);
     },
-  
+
     unregister: function()
     {
       if(!this._branch) return;
       this._branch.removeObserver("", this);
     },
-  
+
     observe: function(aSubject, aTopic, aData)
     {
       if(aTopic != "nsPref:changed") return;
       // aSubject is the nsIPrefBranch we're observing (after appropriate QI)
       // aData is the name of the pref that's been changed (relative to aSubject)
-      org.mozdev.AutoSlide.slider.slide();  
+      org.mozdev.AutoSlide.slider.slide();
     }
   }
-    
+
   return pub;
 }();
 
