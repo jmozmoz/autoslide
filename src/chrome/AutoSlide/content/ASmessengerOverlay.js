@@ -48,7 +48,13 @@ org.mozdev.AutoSlide.slider = function() {
   var ASPrefBranch = Components.classes["@mozilla.org/preferences-service;1"]
                                         .getService(Components.interfaces.nsIPrefService)
                                         .getBranch("extensions.AutoSlide.");
+  var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"]
+                                           .getService(Components.interfaces.nsIConsoleService);
 
+  function debugLog(str) {
+    aConsoleService.logStringMessage(Date() + " AS: " + str);
+  }
+  
   pub.init = function () {
     var mailSession = Components.classes["@mozilla.org/messenger/services/session;1"]
                                 .getService(Components.interfaces.nsIMsgMailSession);
@@ -58,35 +64,69 @@ org.mozdev.AutoSlide.slider = function() {
                                                   nsIFolderListener.event);
     
     var quickFilterBar = document.getElementById("quick-filter-bar");
-    quickFilterBar.addEventListener("DOMAttrModified", onQuickFilterChange, false);
+    quickFilterBar.addEventListener("DOMAttrModified", onCollapseChange, false);
+
+    var messagePaneBox = document.getElementById("messagepanebox");
+    messagePaneBox.addEventListener("DOMAttrModified", onCollapseChange, false);
+
+    var observerService = Components.classes["@mozilla.org/observer-service;1"]
+                                  .getService(Components.interfaces.nsIObserverService);
+    observerService.addObserver(msgObserver, "MsgMsgDisplayed", false);
     
     myPrefObserver.register();
 
-/*    var threadTree = document.getElementById("threadTree");
+    /*
+    var threadTree = document.getElementById("threadTree");
     threadTree.addEventListener("DOMAttrModified", onThreadTreeChange, false);
-*/    
+*/
+    org.mozdev.AutoSlide.slider.slide();  
   }
 
-  function onQuickFilterChange(event) {
+  var msgObserver = {
+    observe: function (aSubject, aTopic, aData) {
+    debugLog("msgObserver " + aTopic);
+      org.mozdev.AutoSlide.slider.slide();
+    }
+  }
+  
+  function onCollapseChange(event) {
     if (event.attrName == "collapsed") {
+      debugLog("onCollapseChange " + event.attrName);
       org.mozdev.AutoSlide.slider.slide();
     }
   };
 
   function onThreadTreeChange(event) {
-    alert(event.attrName);
+    debugLog("onThreadTreeChange " + event.attrName);
   };
 
   pub.slide = function() {
+    var currentTabInfo = document.getElementById("tabmail").currentTabInfo;
+    if ((currentTabInfo.mode.name != "folder") &&
+        (currentTabInfo.mode.name != "glodaList")) {
+      //debugLog("not in folder");
+      return;
+    }
+
     var test = gFolderDisplay.displayedFolder;
     var tree = document.getElementById("threadTree");
     var treeBox = tree.boxObject;
+    if (gDBView==null) {
+      return;
+    }
+    var threadPaneSplitter = document.getElementById("threadpane-splitter");
+    var threadPaneSplitterBox = threadPaneSplitter.boxObject;
+
+    if (threadPaneSplitter.getAttribute("state") == "collapsed" ) {
+      return;
+    }
+    document.getElementById("messagepanebox").setAttribute("flex", "0");
+
     var treeView = gDBView.QueryInterface(Components.interfaces.nsITreeView);
     var count = treeView.rowCount;
-    //alert(treeBox.getPageLength() + " of " + count);
+    //debugLog(treeBox.getPageLength() + " of " + count);
 
     var minHeightPercent = ASPrefBranch.getIntPref("maxThreadPanePercentage");
-    //var maxHeight = 90;
     
     var requiredHeight = treeBox.rowHeight * count;
     var setHeight;
@@ -94,10 +134,9 @@ org.mozdev.AutoSlide.slider = function() {
     var oldHeight = treeBox.height - document.getElementById("threadCols").boxObject.height - 1;
     var displayDeck = document.getElementById("displayDeck");
     var oldDisplayDeckHeight = displayDeck.boxObject.height;
-    //alert("oldHeight: "+oldHeight);
-    var deltaHeight = requiredHeight - oldHeight;
-    
-    var threadPaneSplitterBox = document.getElementById("threadpane-splitter").boxObject;
+    //debugLog("oldHeight: "+oldHeight);
+    var deltaHeight = requiredHeight - oldHeight;    
+
     var messagesBoxBox = document.getElementById("messagesBox").boxObject;
     var messagePaneBox = document.getElementById("messagepanebox");
     
@@ -107,28 +146,27 @@ org.mozdev.AutoSlide.slider = function() {
 
     oldHeight = messagePaneBox.boxObject.height;
     messagePaneBox.removeAttribute("height");
-    //var boxHeight = getComputedStyle(document.getElementById("messagesBox"), '' ).height;
     var minSplitterY = messagesBoxBox.y +
                        messagesBoxBox.height * minHeightPercent/100.0;
 
     if (newSplitterDeltaY > minSplitterY) {
       deltaHeight = deltaHeight + (minSplitterY - newSplitterDeltaY);
     }
-    //alert("delta: "+deltaHeight);
+    //debugLog("delta: "+deltaHeight);
     
 
-    var displayDeck = document.getElementById("displayDeck");
     var anotherDelta = oldDisplayDeckHeight + deltaHeight - displayDeck.getAttribute("minheight"); 
     if (anotherDelta < 0) {
       deltaHeight = deltaHeight - anotherDelta;
     }
 
     var newHeight = oldHeight - deltaHeight;
-    //alert("old: "+oldHeight + " new: "+newHeight);
+    //debugLog("old: "+oldHeight + " new: "+newHeight);
     
     messagePaneBox.setAttribute("height", newHeight);
-    //displayDeck.setAttribute("height", displayDeck.boxObject.height);
-    //messagePaneBox.setAttribute("height", messagePaneBox.getAttribute("height") - anotherDelta);
+    displayDeck.setAttribute("height", displayDeck.boxObject.height);
+    
+    document.getElementById("messagepanebox").setAttribute("flex", "1");
   };
   
   var folderListener = {
@@ -136,19 +174,19 @@ org.mozdev.AutoSlide.slider = function() {
     OnItemAdded: function(aParentItem, aItem) {
       var currentFolder = gFolderTreeView.getSelectedFolders()[0];
       if (aParentItem == currentFolder) {
-        //alert("added " + aParentItem + " " + aItem);
+        //debugLog("added " + aParentItem + " " + aItem);
         org.mozdev.AutoSlide.slider.slide();
       }
     },
     OnItemRemoved: function(aParentItem, aItem) {
       var currentFolder = gFolderTreeView.getSelectedFolders()[0];
       if (aParentItem == currentFolder) {
-        //alert("deleted" + aParentItem + " " + aItem);
+        //debugLog("deleted" + aParentItem + " " + aItem);
         org.mozdev.AutoSlide.slider.slide();
       }
     },
     OnItemEvent: function(aItem, aEvent) {
-      //alert("event " +" " + aEvent);
+      //debugLog("event " +" " + aEvent);
       org.mozdev.AutoSlide.slider.slide();
     },
 

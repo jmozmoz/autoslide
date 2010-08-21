@@ -11,7 +11,6 @@
                 onunderflow="alert('test2');"/>
 -->
 </tree>
-
-<vbox id="messagepanebox" flex="0"/>
+<splitter id="threadpane-splitter" ondblclick="org.mozdev.AutoSlide.slider.slide();"/>
 
 </overlay>
