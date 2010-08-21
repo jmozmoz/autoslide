@@ -51,6 +51,8 @@ org.mozdev.AutoSlide.slider = function() {
   var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"]
                                            .getService(Components.interfaces.nsIConsoleService);
 
+  var timeoutId;
+  
   function debugLog(str) {
     aConsoleService.logStringMessage(Date() + " AS: " + str);
   }
@@ -87,17 +89,15 @@ org.mozdev.AutoSlide.slider = function() {
 /*    threadTree.addEventListener("DOMAttrModified", onThreadTreeChange, false);
 */
     
-    var timeoutID;
-    
     org.mozdev.AutoSlide.slider.slide();
-  }
+  };
 
   var msgObserver = {
     observe: function (aSubject, aTopic, aData) {
     debugLog("msgObserver " + aTopic);
       org.mozdev.AutoSlide.slider.slide();
     }
-  }
+  };
 
   function onCollapseChange(event) {
     if (event.attrName == "collapsed") {
@@ -112,11 +112,11 @@ org.mozdev.AutoSlide.slider = function() {
 
   pub.delayedSlide = function () {
     debugLog("delayedSlide");
-    timeoutID = window.setTimeout(org.mozdev.AutoSlide.slider.slide, 500);
+    timeoutId = window.setTimeout(org.mozdev.AutoSlide.slider.slide, 500);
   }
 
   pub.slide = function() {
-    window.clearTimeout(timeoutID);
+    window.clearTimeout(timeoutId);
     var currentTabInfo = document.getElementById("tabmail").currentTabInfo;
     if ((currentTabInfo.mode.name != "folder") &&
         (currentTabInfo.mode.name != "glodaList")) {
@@ -131,7 +131,6 @@ org.mozdev.AutoSlide.slider = function() {
     var tree = document.getElementById("threadTree");
     var treeBox = tree.boxObject;
     var treeView = gDBView.QueryInterface(Components.interfaces.nsITreeView);
-    }
 
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
     var threadPaneSplitterBox = threadPaneSplitter.boxObject;
@@ -159,19 +158,25 @@ org.mozdev.AutoSlide.slider = function() {
     var messagesBoxBox = document.getElementById("messagesBox").boxObject;
     var messagePaneBox = document.getElementById("messagepanebox");
 
-    var newSplitterDeltaY = threadPaneSplitterBox.y -
-                            messagesBoxBox.y +
-                            deltaHeight;
+    var newSplitterY = threadPaneSplitterBox.y +
+                       deltaHeight;
 
     oldHeight = messagePaneBox.boxObject.height;
     messagePaneBox.removeAttribute("height");
+    
     var minSplitterY = messagesBoxBox.y +
                        messagesBoxBox.height * minHeightPercent/100.0;
 
-    if (newSplitterDeltaY > minSplitterY) {
-      deltaHeight = deltaHeight + (minSplitterY - newSplitterDeltaY);
+    debugLog("newSplitterY: "+newSplitterY);
+    debugLog("messagesBoxBoxY: "+messagesBoxBox.y);
+    debugLog("messagesBoxBoxHeight: "+messagesBoxBox.height);
+    debugLog("minSplitterY: "+minSplitterY);
+    debugLog("old delta: "+deltaHeight);
+    
+    if (newSplitterY > minSplitterY) {
+      deltaHeight = deltaHeight + (minSplitterY - newSplitterY);
     }
-    //debugLog("delta: "+deltaHeight);
+    debugLog("new delta: "+deltaHeight);
 
 
     var anotherDelta = oldDisplayDeckHeight + deltaHeight - displayDeck.getAttribute("minheight");

@@ -4,16 +4,4 @@
 
 <script type="application/javascript" src="chrome://AutoSlide/content/ASmessengerOverlay.js"/>
 
-<tree id="threadTree">
-<!--
-  <treechildren id="threadTree"
-                onoverflow="alert('test1');"
-                onunderflow="alert('test2');"/>
--->
-</tree>
-
-<!--
-<splitter id="threadpane-splitter" ondblclick="org.mozdev.AutoSlide.slider.slide();"/>
- -->
-
 </overlay>
