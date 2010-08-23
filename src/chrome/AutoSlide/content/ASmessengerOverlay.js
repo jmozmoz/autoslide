@@ -51,7 +51,6 @@ org.mozdev.AutoSlide.slider = function() {
   var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"]
                                            .getService(Components.interfaces.nsIConsoleService);
 
-  //var timeoutId;
   var timer;
   
   function debugLog(str) {
@@ -133,7 +132,6 @@ org.mozdev.AutoSlide.slider = function() {
   pub.delayedSlide = function () {
     debugLog("delayedSlide issued");
     timer.initWithCallback(event, 500, Components.interfaces.nsITimer.TYPE_ONE_SHOT);  
-/*    timeoutId = window.setTimeout(org.mozdev.AutoSlide.slider.slide, 500);*/
   }
 
   pub.toggleSlide = function () {
@@ -149,7 +147,6 @@ org.mozdev.AutoSlide.slider = function() {
   }
   
   pub.slide = function(force) {
-    /*window.clearTimeout(timeoutId);*/
     timer.cancel();
     var currentTabInfo = document.getElementById("tabmail").currentTabInfo;
     if ((currentTabInfo.mode.name != "folder") &&
