@@ -51,7 +51,8 @@ org.mozdev.AutoSlide.slider = function() {
   var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"]
                                            .getService(Components.interfaces.nsIConsoleService);
 
-  var timeoutId;
+  //var timeoutId;
+  var timer;
   
   function debugLog(str) {
     aConsoleService.logStringMessage(Date() + " AS: " + str);
@@ -85,11 +86,22 @@ org.mozdev.AutoSlide.slider = function() {
 
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
     threadPaneSplitter.setAttribute("ondblclick",
-        threadPaneSplitter.getAttribute("ondblclick") + ";org.mozdev.AutoSlide.slider.slide();");
+        threadPaneSplitter.getAttribute("ondblclick") + ";org.mozdev.AutoSlide.slider.slide(true);");
+    threadPaneSplitter.setAttribute("oncontextmenu",
+        threadPaneSplitter.getAttribute("oncontextmenu") + ";org.mozdev.AutoSlide.slider.toggleSlide();");
+    
+    var tpsPersist = threadPaneSplitter.getAttribute("persist");
+    debugLog("tpsPersist "+tpsPersist);
+    if (!tpsPersist || !(new RegExp('\\bautoslideoff\\b').test(tpsPersist))) {
+      threadPaneSplitter.setAttribute("persist", tpsPersist + " autoslideoff ");
+    }
+    
 /*    threadTree.addEventListener("DOMAttrModified", onThreadTreeChange, false);
 */
+    timer = Components.classes["@mozilla.org/timer;1"]
+                               .createInstance(Components.interfaces.nsITimer);
     
-    org.mozdev.AutoSlide.slider.slide();
+    org.mozdev.AutoSlide.slider.delayedSlide();
   };
 
   var msgObserver = {
@@ -110,13 +122,35 @@ org.mozdev.AutoSlide.slider = function() {
     debugLog("onThreadTreeChange " + event.attrName);
   };
 
+  var event = {  
+    notify: function(timer) {  
+      debugLog("delayedSlide start");
+      org.mozdev.AutoSlide.slider.slide();  
+    }
+  };
+  
+
   pub.delayedSlide = function () {
-    debugLog("delayedSlide");
-    timeoutId = window.setTimeout(org.mozdev.AutoSlide.slider.slide, 500);
+    debugLog("delayedSlide issued");
+    timer.initWithCallback(event, 500, Components.interfaces.nsITimer.TYPE_ONE_SHOT);  
+/*    timeoutId = window.setTimeout(org.mozdev.AutoSlide.slider.slide, 500);*/
   }
 
-  pub.slide = function() {
-    window.clearTimeout(timeoutId);
+  pub.toggleSlide = function () {
+    debugLog("toggleSlide");
+    var threadPaneSplitter = document.getElementById("threadpane-splitter");
+    var slideState = threadPaneSplitter.getAttribute("autoslideoff");
+    if (slideState) {
+      threadPaneSplitter.removeAttribute("autoslideoff");
+    }
+    else {
+      threadPaneSplitter.setAttribute("autoslideoff", "true");
+    }
+  }
+  
+  pub.slide = function(force) {
+    /*window.clearTimeout(timeoutId);*/
+    timer.cancel();
     var currentTabInfo = document.getElementById("tabmail").currentTabInfo;
     if ((currentTabInfo.mode.name != "folder") &&
         (currentTabInfo.mode.name != "glodaList")) {
@@ -135,7 +169,9 @@ org.mozdev.AutoSlide.slider = function() {
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
     var threadPaneSplitterBox = threadPaneSplitter.boxObject;
 
-    if (threadPaneSplitter.getAttribute("state") == "collapsed" ) {
+    if ((threadPaneSplitter.getAttribute("state") == "collapsed") || 
+        ((threadPaneSplitter.getAttribute("autoslideoff")) &&
+         (!force))) {
       return;
     }
     document.getElementById("messagepanebox").setAttribute("flex", "0");
