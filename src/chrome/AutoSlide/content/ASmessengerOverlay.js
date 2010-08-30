@@ -54,7 +54,7 @@ org.mozdev.AutoSlide.slider = function() {
   var timer;
   
   function debugLog(str) {
-    aConsoleService.logStringMessage(Date() + " AS: " + str);
+    //aConsoleService.logStringMessage(Date() + " AS: " + str);
   }
 
   pub.init = function () {
@@ -66,7 +66,9 @@ org.mozdev.AutoSlide.slider = function() {
                                                   nsIFolderListener.event);
 
     var quickFilterBar = document.getElementById("quick-filter-bar");
-    quickFilterBar.addEventListener("DOMAttrModified", onCollapseChange, false);
+    if (quickFilterBar) {
+      quickFilterBar.addEventListener("DOMAttrModified", onCollapseChange, false);
+    }
 
     var messagePaneBox = document.getElementById("messagepanebox");
     messagePaneBox.addEventListener("DOMAttrModified", onCollapseChange, false);
@@ -159,6 +161,7 @@ org.mozdev.AutoSlide.slider = function() {
     }
 
     //var test = gFolderDisplay.displayedFolder;
+    //var test2 = gFolderDisplay.displayedFolder.URI;
     var tree = document.getElementById("threadTree");
     var treeBox = tree.boxObject;
     var treeView = gDBView.QueryInterface(Components.interfaces.nsITreeView);
