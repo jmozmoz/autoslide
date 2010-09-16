@@ -70,6 +70,11 @@ org.mozdev.AutoSlide.slider = function() {
       quickFilterBar.addEventListener("DOMAttrModified", onCollapseChange, false);
     }
 
+    var displayDeck = document.getElementById("displayDeck");
+    if (displayDeck) {
+      displayDeck.addEventListener("DOMAttrModified", onCollapseChangeDisplayDeck, false);
+    }
+
     var messagePaneBox = document.getElementById("messagepanebox");
     messagePaneBox.addEventListener("DOMAttrModified", onCollapseChange, false);
 
@@ -115,6 +120,22 @@ org.mozdev.AutoSlide.slider = function() {
   function onCollapseChange(event) {
     if (event.attrName == "collapsed") {
       debugLog("onCollapseChange " + event.attrName);
+      org.mozdev.AutoSlide.slider.slide();
+    }
+  };
+
+  function onCollapseChangeDisplayDeck(event) {
+    if (event.attrName == "collapsed") {
+      var displayDeck = document.getElementById("displayDeck");
+      var messagepanehbox = document.getElementById("messagepanehbox");
+      if (messagepanehbox) {
+        if (displayDeck.getAttribute("collapsed") == "true") {
+          messagepanehbox.setAttribute("flex", "1");
+        } else {
+          messagepanehbox.removeAttribute("flex");
+        }
+      }
+      debugLog("onCollapseChangeDisplayDeck " + event.attrName);
       org.mozdev.AutoSlide.slider.slide();
     }
   };
@@ -174,7 +195,8 @@ org.mozdev.AutoSlide.slider = function() {
          (!force))) {
       return;
     }
-    document.getElementById("messagepanebox").setAttribute("flex", "0");
+    var messagePaneBox = document.getElementById("messagepanebox");
+    messagePaneBox.setAttribute("flex", "0");
 
     var treeView = gDBView.QueryInterface(Components.interfaces.nsITreeView);
     var count = treeView.rowCount;
@@ -192,7 +214,6 @@ org.mozdev.AutoSlide.slider = function() {
     var deltaHeight = requiredHeight - oldHeight;
 
     var messagesBoxBox = document.getElementById("messagesBox").boxObject;
-    var messagePaneBox = document.getElementById("messagepanebox");
 
     var newSplitterY = threadPaneSplitterBox.y +
                        deltaHeight;
@@ -226,7 +247,11 @@ org.mozdev.AutoSlide.slider = function() {
     messagePaneBox.setAttribute("height", newHeight);
     displayDeck.setAttribute("height", displayDeck.boxObject.height);
 
-    document.getElementById("messagepanebox").setAttribute("flex", "1");
+    messagePaneBox.setAttribute("flex", "1");
+    var messagePaneHBox = document.getElementById("messagepanehbox")
+    if (messagePaneHBox) {
+      messagePaneHBox.removeAttribute("height");
+    }
   };
 
   var folderListener = {
