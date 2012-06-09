@@ -11,6 +11,7 @@
 		<em:creator>Joachim Herb</em:creator>
     <em:optionsURL>chrome://AutoSlide/content/preferences.xul</em:optionsURL>
 		<em:homepageURL>http://autoslide.mozdev.org/</em:homepageURL>
+    <em:iconURL>chrome://AutoSlide/skin/autoslide-64.png</em:iconURL>
 		<em:updateURL>http://autoslide.mozdev.org/update.rdf</em:updateURL>
     <em:updateKey>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+O1ZsY+7zY6A2GUdEx+6yoWhlfMz7qtDWDLEzMDCZ046vWauIwTGsIT4/48InmKSjF8q529U8FHamJI03FQuuE94KdLkQCJfGTUOwf/U1pKcHpF/WweGmRj7SrOt/exNCdUj7EaJ/vICy4TaUZ42Oul2CwP00x4BixiNs+26UbwIDAQAB</em:updateKey>
     <em:id>autoslide@mozdev.org</em:id>
