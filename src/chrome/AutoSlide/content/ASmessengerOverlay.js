@@ -231,14 +231,7 @@ org.mozdev.AutoSlide.slider = function() {
     myPrefObserver.register();
 
     var threadTree = document.getElementById("threadTree");
-//    threadTree.addEventListener("click", org.mozdev.AutoSlide.slider.slide, false);
-//    threadTree.addEventListener("keypress", org.mozdev.AutoSlide.slider.delayedSlideSlow, false);
     
-//    threadTree.setAttribute("onclick",
-//        threadTree.getAttribute("onclick") + ";org.mozdev.AutoSlide.slider.slide();");
-//    threadTree.setAttribute("onkeypress",
-//        threadTree.getAttribute("onkeypress") + ";org.mozdev.AutoSlide.slider.delayedSlideSlow();");
-
     var multiMessage = document.getElementById("multimessage");
     if (multiMessage){
       debugLog("multimessage ...");
@@ -247,19 +240,35 @@ org.mozdev.AutoSlide.slider = function() {
     }
     
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
-//    threadPaneSplitter.setAttribute("ondblclick",
-//        threadPaneSplitter.getAttribute("ondblclick") + ";org.mozdev.AutoSlide.slider.slide(true);");
-//    threadPaneSplitter.setAttribute("oncontextmenu",
-//        threadPaneSplitter.getAttribute("oncontextmenu") + ";org.mozdev.AutoSlide.slider.toggleSlide();");
-
+    threadPaneSplitter.addEventListener("dblclick", org.mozdev.AutoSlide.slider.slideForce);
+    threadPaneSplitter.addEventListener("contextmenu", org.mozdev.AutoSlide.slider.toggleSlide);
+    
     var tpsPersist = threadPaneSplitter.getAttribute("persist");
     debugLog("tpsPersist "+tpsPersist);
     if (!tpsPersist || !(new RegExp('\\bautoslideoff\\b').test(tpsPersist))) {
       threadPaneSplitter.setAttribute("persist", tpsPersist + " autoslideoff ");
     }
 
-/*    threadTree.addEventListener("DOMAttrModified", onThreadTreeChange, false);
-*/
+    let threadToggle = ["cmd_expandAllThreads", "cmd_collapseAllThreads",
+                        "key_expandAllThreads", "key_collapseAllThreads"];
+    
+    for (let i = 0; i < threadToggle.length; i++) {
+      let cmd = document.getElementById(threadToggle[i]);
+      if (cmd) {
+        cmd.addEventListener("command", onCollapseChange);
+        debugLog("add command event: " + cmd.id);
+      }
+    }
+    
+    let mailKeys = document.getElementById("mailKeys");
+    let keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_expandAllThreads')");
+    for (let i = 0; i < keys.length; i++) {
+      if (keys[i]) {
+        keys[i].addEventListener("command", onCollapseChange);
+        debugLog("add key event: " + keys[i].id);
+      }
+    }
+    
     timerSlow = Components.classes["@mozilla.org/timer;1"]
                                    .createInstance(Components.interfaces.nsITimer);
     timerFast = Components.classes["@mozilla.org/timer;1"]
@@ -333,6 +342,10 @@ org.mozdev.AutoSlide.slider = function() {
     else {
       threadPaneSplitter.setAttribute("autoslideoff", "true");
     }
+  }
+
+  pub.slideForce = function() {
+    pub.slide(true);
   }
 
   pub.slide = function(force) {

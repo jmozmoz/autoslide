@@ -6,7 +6,7 @@
 
 	<RDF:Description about="urn:mozilla:install-manifest">
 		<em:name>AutoSlide</em:name>
-		<em:version>0.0.9</em:version>
+		<em:version>0.0.10</em:version>
 		<em:description>Automatically adjust the size of the thread pane</em:description>
 		<em:creator>Joachim Herb</em:creator>
     <em:optionsURL>chrome://AutoSlide/content/preferences.xul</em:optionsURL>
