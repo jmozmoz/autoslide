@@ -231,6 +231,7 @@ org.mozdev.AutoSlide.slider = function() {
     myPrefObserver.register();
 
     var threadTree = document.getElementById("threadTree");
+    threadTree.addEventListener("click", onCollapseChange);
     
     var multiMessage = document.getElementById("multimessage");
     if (multiMessage){
@@ -249,8 +250,7 @@ org.mozdev.AutoSlide.slider = function() {
       threadPaneSplitter.setAttribute("persist", tpsPersist + " autoslideoff ");
     }
 
-    let threadToggle = ["cmd_expandAllThreads", "cmd_collapseAllThreads",
-                        "key_expandAllThreads", "key_collapseAllThreads"];
+    let threadToggle = ["cmd_expandAllThreads", "cmd_collapseAllThreads"];
     
     for (let i = 0; i < threadToggle.length; i++) {
       let cmd = document.getElementById(threadToggle[i]);
@@ -262,6 +262,13 @@ org.mozdev.AutoSlide.slider = function() {
     
     let mailKeys = document.getElementById("mailKeys");
     let keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_expandAllThreads')");
+    for (let i = 0; i < keys.length; i++) {
+      if (keys[i]) {
+        keys[i].addEventListener("command", onCollapseChange);
+        debugLog("add key event: " + keys[i].id);
+      }
+    }
+    keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_collapseAllThreads')");
     for (let i = 0; i < keys.length; i++) {
       if (keys[i]) {
         keys[i].addEventListener("command", onCollapseChange);
