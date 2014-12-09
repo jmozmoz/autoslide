@@ -51,14 +51,15 @@ org.mozdev.AutoSlide.slider = function() {
   var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"]
                                            .getService(Components.interfaces.nsIConsoleService);
 
-  
+  const { console } = Components.utils.import("resource://gre/modules/devtools/Console.jsm", {});
+
   /**
    * Defines the DBViewWrapper listener interface.  This class exists exclusively
    *  for documentation purposes and should never be instantiated.
    */
   function viewWrapperListener() {
   }
-  
+
   viewWrapperListener.prototype = {
     /* ===== Event Notifications ===== */
     /* === Status Changes === */
@@ -150,7 +151,7 @@ org.mozdev.AutoSlide.slider = function() {
      */
     onMessagesLoaded: function(aAll) {
       debugLog("onMessagesLoaded slide");
-      org.mozdev.AutoSlide.slider.delayedSlideSlow();
+      pub.delayedSlideSlow();
     },
 
     /**
@@ -195,22 +196,24 @@ org.mozdev.AutoSlide.slider = function() {
 //    onMessageCountsChanged: function () {
 //      debugLog("onMessageCountsChanged");
 //    },
-    
+
 //    onActiveCreatedView: function() {
 //      debugLog("onActiveCreatedView");
 //    },
-    
+
 //    onMakeActive: function() {
 //      debugLog("onMakeActive");
 //    }
   };
-  
+
   var timerSlow;
   var timerFast;
 
   function debugLog(str) {
-    if (ASPrefBranch.getBoolPref("debugLog"))
+    if (ASPrefBranch.getBoolPref("debugLog")) {
       aConsoleService.logStringMessage(Date() + " AS: " + str);
+//      console.log(Date() + " AS: " + str);
+    }
   }
 
   pub.init = function () {
@@ -223,7 +226,7 @@ org.mozdev.AutoSlide.slider = function() {
                                                   nsIFolderListener.event);
 
     document.defaultView.FolderDisplayListenerManager.registerListener(new viewWrapperListener());
-        
+
     var observerService = Components.classes["@mozilla.org/observer-service;1"]
                                   .getService(Components.interfaces.nsIObserverService);
     observerService.addObserver(msgObserver, "MsgMsgDisplayed", false);
@@ -232,18 +235,18 @@ org.mozdev.AutoSlide.slider = function() {
 
     var threadTree = document.getElementById("threadTree");
     threadTree.addEventListener("click", onCollapseChange);
-    
+
     var multiMessage = document.getElementById("multimessage");
     if (multiMessage){
       debugLog("multimessage ...");
       multiMessage.contentDocument.addEventListener("load", onCollapseChange, true);
       debugLog("multimessage added");
     }
-    
+
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
-    threadPaneSplitter.addEventListener("dblclick", org.mozdev.AutoSlide.slider.slideForce);
-    threadPaneSplitter.addEventListener("contextmenu", org.mozdev.AutoSlide.slider.toggleSlide);
-    
+    threadPaneSplitter.addEventListener("dblclick", pub.slideForce);
+    threadPaneSplitter.addEventListener("contextmenu", pub.toggleSlide);
+
     var tpsPersist = threadPaneSplitter.getAttribute("persist");
     debugLog("tpsPersist "+tpsPersist);
     if (!tpsPersist || !(new RegExp('\\bautoslideoff\\b').test(tpsPersist))) {
@@ -251,7 +254,7 @@ org.mozdev.AutoSlide.slider = function() {
     }
 
     let threadToggle = ["cmd_expandAllThreads", "cmd_collapseAllThreads"];
-    
+
     for (let i = 0; i < threadToggle.length; i++) {
       let cmd = document.getElementById(threadToggle[i]);
       if (cmd) {
@@ -259,7 +262,7 @@ org.mozdev.AutoSlide.slider = function() {
         debugLog("add command event: " + cmd.id);
       }
     }
-    
+
     let mailKeys = document.getElementById("mailKeys");
     let keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_expandAllThreads')");
     for (let i = 0; i < keys.length; i++) {
@@ -275,7 +278,7 @@ org.mozdev.AutoSlide.slider = function() {
         debugLog("add key event: " + keys[i].id);
       }
     }
-    
+
     timerSlow = Components.classes["@mozilla.org/timer;1"]
                                    .createInstance(Components.interfaces.nsITimer);
     timerFast = Components.classes["@mozilla.org/timer;1"]
@@ -286,13 +289,13 @@ org.mozdev.AutoSlide.slider = function() {
     observe: function (aSubject, aTopic, aData) {
       debugLog("msgObserver " + aTopic);
       debugLog("msgObserver slide");
-      org.mozdev.AutoSlide.slider.delayedSlideFast();
+      pub.delayedSlideFast();
     }
   };
 
   function onCollapseChange() {
     debugLog("onCollapseChange ");
-    org.mozdev.AutoSlide.slider.delayedSlideFast();
+    pub.delayedSlideFast();
   };
 
   function onThreadTreeChange(event) {
@@ -305,7 +308,7 @@ org.mozdev.AutoSlide.slider = function() {
   var eventSlow = {
     notify: function(timer) {
       debugLog("delayedSlideSlow start");
-      org.mozdev.AutoSlide.slider.slide();
+      pub.slide();
       delayedSlideRequestSlow = false;
       debugLog("delayedSlideSlow stop");
     }
@@ -314,7 +317,7 @@ org.mozdev.AutoSlide.slider = function() {
   var eventFast = {
       notify: function(timer) {
         debugLog("delayedSlideFast start");
-        org.mozdev.AutoSlide.slider.slide();
+        pub.slide();
         delayedSlideRequestFast = false;
         debugLog("delayedSlideFast stop");
       }
@@ -446,7 +449,7 @@ org.mozdev.AutoSlide.slider = function() {
       if (aParentItem == currentFolder) {
         //debugLog("added " + aParentItem + " " + aItem);
         debugLog("OnItemAdded slide");
-        org.mozdev.AutoSlide.slider.delayedSlideFast();
+        pub.delayedSlideFast();
       }
     },
     OnItemRemoved: function(aParentItem, aItem) {
@@ -454,13 +457,13 @@ org.mozdev.AutoSlide.slider = function() {
       if (aParentItem == currentFolder) {
         //debugLog("deleted" + aParentItem + " " + aItem);
         debugLog("OnItemRemoved slide");
-        org.mozdev.AutoSlide.slider.delayedSlideFast();
+        pub.delayedSlideFast();
       }
     },
     OnItemEvent: function(aItem, aEvent) {
       //debugLog("event " +" " + aEvent);
       debugLog("OnItemEvent slide");
-      org.mozdev.AutoSlide.slider.delayedSlideFast();
+      pub.delayedSlideFast();
     },
 
   };
@@ -496,7 +499,7 @@ org.mozdev.AutoSlide.slider = function() {
       // aSubject is the nsIPrefBranch we're observing (after appropriate QI)
       // aData is the name of the pref that's been changed (relative to aSubject)
       debugLog("myPrefObserver slide");
-      org.mozdev.AutoSlide.slider.delayedSlideFast();
+      pub.delayedSlideFast();
     }
   }
 
