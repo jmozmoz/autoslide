@@ -13,8 +13,8 @@
 <dialog id="ASPreferences" 
         title="&dialog.title;" 
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        onload="org.mozdev.AutoSlide.preferences.onLoad();" 
-        ondialogaccept="return org.mozdev.AutoSlide.preferences.onDialogAccept();">
+        onload="org_mozdev_AutoSlide.preferences.onLoad();" 
+        ondialogaccept="return org_mozdev_AutoSlide.preferences.onDialogAccept();">
 
   <script type="application/x-javascript" src="chrome://AutoSlide/content/preferences.js"/>
 

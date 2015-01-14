@@ -38,11 +38,11 @@
 # ***** END LICENSE BLOCK *****
 */
 
-if(!org) var org={};
-if(!org.mozdev) org.mozdev={};
-if(!org.mozdev.AutoSlide) org.mozdev.AutoSlide = {};
+if (typeof org_mozdev_AutoSlide == "undefined") {
+  var org_mozdev_AutoSlide = {};
+};
 
-org.mozdev.AutoSlide.slider = function() {
+org_mozdev_AutoSlide.slider = function() {
   var pub = {};
 
   var ASPrefBranch = Components.classes["@mozilla.org/preferences-service;1"]
@@ -506,5 +506,5 @@ org.mozdev.AutoSlide.slider = function() {
   return pub;
 }();
 
-addEventListener("load", org.mozdev.AutoSlide.slider.init, true);
+addEventListener("load", org_mozdev_AutoSlide.slider.init, true);
 
