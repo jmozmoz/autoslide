@@ -38,55 +38,8 @@
 # ***** END LICENSE BLOCK *****
 */
 
-if (typeof org_mozdev_AutoSlide == "undefined") {
-  var org_mozdev_AutoSlide = {};
-};
-
-org_mozdev_AutoSlide.preferences = function() {
-  var pub = {};
-  var prefBranch;
-  ///////////////////////////////////////////////////////////////////////////////
-  //
-  //  onLoad
-  //
-  //  Called when the preferences dialog has finished loading. Initializes the
-  //  controls according to current configuration settings.
-  //
-
-  pub.onLoad = function()
-  {
-    prefBranch = Components.classes["@mozilla.org/preferences-service;1"]
-      .getService(Components.interfaces.nsIPrefService)
-      .getBranch("extensions.AutoSlide.");
-
-    loadPrefInt("maxThreadPanePercentage", "maxthreadpanepercentage");
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  //
-  //  onDialogAccept
-  //
-  //  Called when the preferences dialog is closed by pressing the OK button.
-  //  Saves the configuration settings.
-  //
-
-  pub.onDialogAccept = function ()
-  {
-    savePrefInt("maxThreadPanePercentage", "maxthreadpanepercentage");
-    return true;
-  }
+Preferences.addAll([
+    { id: "extensions.AutoSlide.maxThreadPanePercentage", type: "int" }
+]);
 
 
-
-  function loadPrefInt(pref, idCheckbox)
-  {
-    document.getElementById(idCheckbox).value = prefBranch.getIntPref(pref);
-  }
-
-
-  function savePrefInt(pref, idCheckbox)
-  {
-    prefBranch.setIntPref(pref, document.getElementById(idCheckbox).value);
-  }
-  return pub;
-}();

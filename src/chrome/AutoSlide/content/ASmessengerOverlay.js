@@ -45,13 +45,15 @@ if (typeof org_mozdev_AutoSlide == "undefined") {
 org_mozdev_AutoSlide.slider = function() {
   var pub = {};
 
+  Cu.import("resource://gre/modules/Services.jsm");
+
   var ASPrefBranch = Components.classes["@mozilla.org/preferences-service;1"]
                                         .getService(Components.interfaces.nsIPrefService)
                                         .getBranch("extensions.AutoSlide.");
-  var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"]
-                                           .getService(Components.interfaces.nsIConsoleService);
-
-  const { console } = Components.utils.import("resource://gre/modules/devtools/Console.jsm", {});
+//  var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"]
+//                                           .getService(Components.interfaces.nsIConsoleService);
+//
+//  const { console } = Components.utils.import("resource://gre/modules/devtools/Console.jsm", {});
 
   /**
    * Defines the DBViewWrapper listener interface.  This class exists exclusively
@@ -211,8 +213,9 @@ org_mozdev_AutoSlide.slider = function() {
 
   function debugLog(str) {
     if (ASPrefBranch.getBoolPref("debugLog")) {
-      aConsoleService.logStringMessage(Date() + " AS: " + str);
-//      console.log(Date() + " AS: " + str);
+//      aConsoleService.logStringMessage(Date() + " AS: " + str);
+      Services.console.logStringMessage(Date() + " AS: " + str);
+      //      console.log(Date() + " AS: " + str);
     }
   }
 
@@ -392,13 +395,19 @@ org_mozdev_AutoSlide.slider = function() {
 
     var minHeightPercent = ASPrefBranch.getIntPref("maxThreadPanePercentage");
 
-    var requiredHeight = treeBox.rowHeight * count;
+    var requiredHeight = tree.rowHeight * count;
     var setHeight;
 
     var oldHeight = treeBox.height - document.getElementById("threadCols").boxObject.height - 1;
     var displayDeck = document.getElementById("displayDeck");
     var oldDisplayDeckHeight = displayDeck.boxObject.height;
-    debugLog("oldHeight: "+oldHeight);
+    debugLog("treeBox: " + treeBox);
+    debugLog("tree.getPageLength(): " + tree.getPageLength());
+    debugLog("minHeightPercent: " + minHeightPercent);
+    debugLog("treeBox: " + treeBox.rowHeight);
+    debugLog("count: " + count);
+    debugLog("oldHeight: " + oldHeight);
+    debugLog("requiredHeight: " + requiredHeight);
     var deltaHeight = requiredHeight - oldHeight;
 
     var messagesBoxBox = document.getElementById("messagesBox").boxObject;
@@ -412,11 +421,14 @@ org_mozdev_AutoSlide.slider = function() {
     var minSplitterY = messagesBoxBox.y +
                        messagesBoxBox.height * minHeightPercent/100.0;
 
-    debugLog("newSplitterY: "+newSplitterY);
-    debugLog("messagesBoxBoxY: "+messagesBoxBox.y);
-    debugLog("messagesBoxBoxHeight: "+messagesBoxBox.height);
-    debugLog("minSplitterY: "+minSplitterY);
-    debugLog("old delta: "+deltaHeight);
+    debugLog("threadPaneSplitterBox: " + threadPaneSplitterBox.y);
+    debugLog("deltaHeight: " + deltaHeight);
+    debugLog("deltaHeight: " + deltaHeight);
+    debugLog("newSplitterY: " + newSplitterY);
+    debugLog("messagesBoxBoxY: " + messagesBoxBox.y);
+    debugLog("messagesBoxBoxHeight: " + messagesBoxBox.height);
+    debugLog("minSplitterY: " + minSplitterY);
+    debugLog("old delta: " + deltaHeight);
 
     if (newSplitterY > minSplitterY) {
       deltaHeight = deltaHeight + (minSplitterY - newSplitterY);
@@ -481,7 +493,7 @@ org_mozdev_AutoSlide.slider = function() {
 
       // Now we queue the interface called nsIPrefBranch2. This interface is described as:
       // "nsIPrefBranch2 allows clients to observe changes to pref values."
-      this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
+      this._branch.QueryInterface(Components.interfaces.nsIPrefBranch);
 
       // Finally add the observer.
       this._branch.addObserver("", this, false);
