@@ -55,29 +55,6 @@ org_mozdev_AutoSlide.slider = function() {
 //
 //  const { console } = Components.utils.import("resource://gre/modules/devtools/Console.jsm", {});
 
-  /**
-   * Defines the DBViewWrapper listener interface.  This class exists exclusively
-   *  for documentation purposes and should never be instantiated.
-   */
-  function viewWrapperListener() {
-  }
-
-  viewWrapperListener.prototype = {
-    /**
-     * Things to do once all the messages that should show up in a folder have
-     *  shown up.  For a real folder, this happens when the folder is entered.
-     *  For a (multi-folder) virtual folder, this happens when the search
-     *  completes.
-     * You may get onMessagesLoaded called with aAll false immediately after
-     * the view is opened. You will definitely get onMessagesLoaded(true)
-     * when we've finished getting the headers for the view.
-     */
-    onMessagesLoaded: function(aAll) {
-      debugLog("onMessagesLoaded slide");
-      pub.delayedSlideSlow();
-    },
-
-  };
 
   var timerSlow;
   var timerFast;
@@ -92,14 +69,50 @@ org_mozdev_AutoSlide.slider = function() {
 
   pub.init = function () {
     debugLog("AS init start");
-    var mailSession = Components.classes["@mozilla.org/messenger/services/session;1"]
-                                .getService(Components.interfaces.nsIMsgMailSession);
-    var nsIFolderListener = Components.interfaces.nsIFolderListener;
-    mailSession.AddFolderListener(folderListener, nsIFolderListener.removed |
-                                                  nsIFolderListener.added |
-                                                  nsIFolderListener.event);
 
-    document.defaultView.FolderDisplayListenerManager.registerListener(new viewWrapperListener());
+    function viewWrapperListener() {
+      this.register();
+    }
+
+    viewWrapperListener.prototype = {
+      /**
+       * Things to do once all the messages that should show up in a folder have
+       *  shown up.  For a real folder, this happens when the folder is entered.
+       *  For a (multi-folder) virtual folder, this happens when the search
+       *  completes.
+       * You may get onMessagesLoaded called with aAll false immediately after
+       * the view is opened. You will definitely get onMessagesLoaded(true)
+       * when we've finished getting the headers for the view.
+       */
+      onMessagesLoaded: function(aAll) {
+        debugLog("onMessagesLoaded slide");
+        pub.delayedSlideSlow();
+      },
+
+      register: function() {
+        var mailSession = Components.classes["@mozilla.org/messenger/services/session;1"]
+                                    .getService(Components.interfaces.nsIMsgMailSession);
+        var nsIFolderListener = Components.interfaces.nsIFolderListener;
+        mailSession.AddFolderListener(folderListener, nsIFolderListener.removed |
+                                                      nsIFolderListener.added |
+                                                      nsIFolderListener.event);
+
+        document.defaultView.FolderDisplayListenerManager.registerListener(this);
+      },
+      unregister: function() {
+        var mailSession = Components.classes["@mozilla.org/messenger/services/session;1"]
+                                    .getService(Components.interfaces.nsIMsgMailSession);
+        var nsIFolderListener = Components.interfaces.nsIFolderListener;
+        mailSession.RemoveFolderListener(folderListener, nsIFolderListener.removed |
+                                                      nsIFolderListener.added |
+                                                      nsIFolderListener.event);
+
+        document.defaultView.FolderDisplayListenerManager.unregisterListener(this);
+        debugLog("viewWrapperListener unregistered ");
+      }
+    };
+
+    pub.viewWrapperListener = new viewWrapperListener();
 
     function myObserver()
     {
@@ -121,6 +134,8 @@ org_mozdev_AutoSlide.slider = function() {
         var observerService = Components.classes["@mozilla.org/observer-service;1"]
                                 .getService(Components.interfaces.nsIObserverService);
         observerService.removeObserver(this, "MsgMsgDisplayed");
+        debugLog("msgObserver unregistered ");
+
       }
     }
 
@@ -128,61 +143,116 @@ org_mozdev_AutoSlide.slider = function() {
 
     pub.myPrefObserver.register();
 
-    var threadTree = document.getElementById("threadTree");
-    threadTree.addEventListener("click", onCollapseChange);
-
-    var multiMessage = document.getElementById("multimessage");
-    if (multiMessage){
-      debugLog("multimessage ...");
-      multiMessage.contentDocument.addEventListener("load", onCollapseChange, true);
-      debugLog("multimessage added");
-    }
-
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
-    threadPaneSplitter.addEventListener("dblclick", pub.slideForce);
-    threadPaneSplitter.addEventListener("contextmenu", pub.toggleSlide);
-
     var tpsPersist = threadPaneSplitter.getAttribute("persist");
     debugLog("tpsPersist "+tpsPersist);
     if (!tpsPersist || !(new RegExp('\\bautoslideoff\\b').test(tpsPersist))) {
       threadPaneSplitter.setAttribute("persist", tpsPersist + " autoslideoff ");
     }
 
-    let threadToggle = ["cmd_expandAllThreads", "cmd_collapseAllThreads"];
-
-    for (let i = 0; i < threadToggle.length; i++) {
-      let cmd = document.getElementById(threadToggle[i]);
-      if (cmd) {
-        cmd.addEventListener("command", onCollapseChange);
-        debugLog("add command event: " + cmd.id);
-      }
+    function onCollapseChange()
+    {
+      this.register();
     }
 
-    let mailKeys = document.getElementById("mailKeys");
-    let keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_expandAllThreads')");
-    for (let i = 0; i < keys.length; i++) {
-      if (keys[i]) {
-        keys[i].addEventListener("command", onCollapseChange);
-        debugLog("add key event: " + keys[i].id);
+    onCollapseChange.prototype = {
+      onCollapseChange: function() {
+        debugLog("onCollapseChange ");
+        pub.delayedSlideFast();
+      },
+      register: function() {
+
+        var threadPaneSplitter = document.getElementById("threadpane-splitter");
+        threadPaneSplitter.addEventListener("dblclick", pub.slideForce);
+        threadPaneSplitter.addEventListener("contextmenu", pub.toggleSlide);
+
+        var threadTree = document.getElementById("threadTree");
+        threadTree.addEventListener("click", this.onCollapseChange);
+
+        var multiMessage = document.getElementById("multimessage");
+        if (multiMessage){
+          debugLog("multimessage ...");
+          multiMessage.contentDocument.addEventListener("load", this.onCollapseChange, true);
+          debugLog("multimessage added");
+        }
+
+        let threadToggle = ["cmd_expandAllThreads", "cmd_collapseAllThreads"];
+
+        for (let i = 0; i < threadToggle.length; i++) {
+          let cmd = document.getElementById(threadToggle[i]);
+          if (cmd) {
+            cmd.addEventListener("command", this.onCollapseChange);
+            debugLog("add command event: " + cmd.id);
+          }
+        }
+
+        let mailKeys = document.getElementById("mailKeys");
+        let keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_expandAllThreads')");
+        for (let i = 0; i < keys.length; i++) {
+          if (keys[i]) {
+            keys[i].addEventListener("command", this.onCollapseChange);
+            debugLog("add key event: " + keys[i].id);
+          }
+        }
+        keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_collapseAllThreads')");
+        for (let i = 0; i < keys.length; i++) {
+          if (keys[i]) {
+            keys[i].addEventListener("command", this.onCollapseChange);
+            debugLog("add key event: " + keys[i].id);
+          }
+        }
+      },
+      unregister: function() {
+
+        var threadPaneSplitter = document.getElementById("threadpane-splitter");
+        threadPaneSplitter.removeEventListener("dblclick", pub.slideForce);
+        threadPaneSplitter.removeEventListener("contextmenu", pub.toggleSlide);
+
+        var threadTree = document.getElementById("threadTree");
+        threadTree.removeEventListener("click", this.onCollapseChange);
+
+        var multiMessage = document.getElementById("multimessage");
+        if (multiMessage){
+          debugLog("multimessage ...");
+          multiMessage.contentDocument.removeEventListener("load", this.onCollapseChange);
+          debugLog("multimessage remove");
+        }
+
+        let threadToggle = ["cmd_expandAllThreads", "cmd_collapseAllThreads"];
+
+        for (let i = 0; i < threadToggle.length; i++) {
+          let cmd = document.getElementById(threadToggle[i]);
+          if (cmd) {
+            cmd.removeEventListener("command", this.onCollapseChange);
+            debugLog("remove command event: " + cmd.id);
+          }
+        }
+
+        let mailKeys = document.getElementById("mailKeys");
+        let keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_expandAllThreads')");
+        for (let i = 0; i < keys.length; i++) {
+          if (keys[i]) {
+            keys[i].removeEventListener("command", this.onCollapseChange);
+            debugLog("remove key event: " + keys[i].id);
+          }
+        }
+        keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_collapseAllThreads')");
+        for (let i = 0; i < keys.length; i++) {
+          if (keys[i]) {
+            keys[i].removeEventListener("command", this.onCollapseChange);
+            debugLog("remove key event: " + keys[i].id);
+          }
+        }
       }
     }
-    keys = mailKeys.getElementsByAttribute("oncommand", "goDoCommand('cmd_collapseAllThreads')");
-    for (let i = 0; i < keys.length; i++) {
-      if (keys[i]) {
-        keys[i].addEventListener("command", onCollapseChange);
-        debugLog("add key event: " + keys[i].id);
-      }
-    }
+
+    pub.onCollapseChange = new onCollapseChange();
+
 
     timerSlow = Components.classes["@mozilla.org/timer;1"]
                                    .createInstance(Components.interfaces.nsITimer);
     timerFast = Components.classes["@mozilla.org/timer;1"]
                                    .createInstance(Components.interfaces.nsITimer);
-  };
-
-  function onCollapseChange() {
-    debugLog("onCollapseChange ");
-    pub.delayedSlideFast();
   };
 
   function onThreadTreeChange(event) {
@@ -387,6 +457,7 @@ org_mozdev_AutoSlide.slider = function() {
     {
       if(!this._branch) return;
       this._branch.removeObserver("", this);
+      debugLog("myPrefObserver unregistered ");
     },
 
     observe: function(aSubject, aTopic, aData)

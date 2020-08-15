@@ -23,4 +23,6 @@ function onUnload(deactivatedWhileWindowOpen) {
   }
   window.org_mozdev_AutoSlide.slider.msgObserver.unregister();
   window.org_mozdev_AutoSlide.slider.myPrefObserver.unregister();
+  window.org_mozdev_AutoSlide.slider.viewWrapperListener.unregister();
+  window.org_mozdev_AutoSlide.slider.onCollapseChange.unregister();
 }
