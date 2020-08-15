@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/css" href="chrome://AutoSlide/skin/autoslide.css"?>
+<?xml-stylesheet type="text/css" href="chrome://AutoSlide/content/skin/autoslide.css"?>
 
 <overlay id="ASmessengerOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 

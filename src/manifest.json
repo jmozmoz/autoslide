@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "AutoSlide",
   "description": "Automatically adjust the size of the thread pane",
-  "version": "0.0.17beta1",
+  "version": "0.0.18beta1",
   "author": "Joachim Herb",
   "homepage_url": "http://autoslide.mozdev.org/",
   "legacy": {
@@ -18,6 +18,6 @@
     }
   },
   "icons": {
-    "64": "chrome/AutoSlide/skin/global/autoslide-64.png"
+    "64": "chrome/AutoSlide/content/skin/autoslide-64.png"
   }
 }

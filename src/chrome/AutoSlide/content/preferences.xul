@@ -3,7 +3,7 @@
 <?xml-stylesheet type="text/css" href="chrome://global/skin/"?>
 <?xml-stylesheet type="text/css" href="chrome://messenger/skin/preferences/preferences.css"?>
 <?xml-stylesheet type="text/css" href="chrome://communicator/skin/"?>
-<?xml-stylesheet type="text/css" href="chrome://AutoSlide/skin/preferences.css"?>
+<?xml-stylesheet type="text/css" href="chrome://AutoSlide/content/skin/preferences.css"?>
 
 <!DOCTYPE dialog [
 <!ENTITY % CompactHeaderDTD SYSTEM "chrome://AutoSlide/locale/preferences.dtd">
