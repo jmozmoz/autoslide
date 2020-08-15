@@ -43,10 +43,11 @@
     <json-properties jsonFile="${my.project.dir}/manifest.json"/>
     <zip destfile="${dist.dir}/${app.name}-${version}.xpi">
       <fileset dir="${src.dir}">
-        <include name="chrome.manifest" />
         <include name="manifest.json" />
         <include name="defaults/**" />
         <include name="chrome/**" />
+        <include name="background.js" />
+        <include name="api/**" />
         <exclude name="**/.*" />
         <exclude name="**/CVS/**" />
       </fileset>
