@@ -8,7 +8,8 @@
   "applications": {
     "gecko": {
       "id": "autoslide@mozdev.org",
-      "strict_min_version": "68.0"
+      "strict_min_version": "68.0",
+      "strict_max_version": "68.*"
     }
   },
   "icons": {
