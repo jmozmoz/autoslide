@@ -108,7 +108,7 @@ org_mozdev_AutoSlide.slider = function() {
 
     myObserver.prototype = {
       observe: function(subject, topic, data) {
-        debugLog("msgObserver " + aTopic);
+        debugLog("msgObserver " + topic);
         debugLog("msgObserver slide");
         pub.delayedSlideFast();
       },
