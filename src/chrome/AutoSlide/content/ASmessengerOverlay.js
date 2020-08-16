@@ -329,11 +329,11 @@ org_mozdev_AutoSlide.slider = function() {
     //var test = gFolderDisplay.displayedFolder;
     //var test2 = gFolderDisplay.displayedFolder.URI;
     var tree = document.getElementById("threadTree");
-    var treeBox = tree.boxObject;
+    var treeBox = tree.getBoundingClientRect();
     var treeView = gDBView.QueryInterface(Components.interfaces.nsITreeView);
 
     var threadPaneSplitter = document.getElementById("threadpane-splitter");
-    var threadPaneSplitterBox = threadPaneSplitter.boxObject;
+    var threadPaneSplitterBox = threadPaneSplitter.getBoundingClientRect();
 
     if ((threadPaneSplitter.getAttribute("state") == "collapsed") ||
         ((threadPaneSplitter.getAttribute("autoslideoff")) &&
@@ -345,31 +345,30 @@ org_mozdev_AutoSlide.slider = function() {
 
     var treeView = gDBView.QueryInterface(Components.interfaces.nsITreeView);
     var count = treeView.rowCount;
-    //debugLog(treeBox.getPageLength() + " of " + count);
 
     var minHeightPercent = ASPrefBranch.getIntPref("maxThreadPanePercentage");
 
     var requiredHeight = tree.rowHeight * count;
     var setHeight;
 
-    var oldHeight = treeBox.height - document.getElementById("threadCols").boxObject.height - 1;
+    var oldHeight = treeBox.height - document.getElementById("threadCols").getBoundingClientRect().height - 1;
     var displayDeck = document.getElementById("displayDeck");
-    var oldDisplayDeckHeight = displayDeck.boxObject.height;
+    var oldDisplayDeckHeight = displayDeck.getBoundingClientRect().height;
     debugLog("treeBox: " + treeBox);
     debugLog("tree.getPageLength(): " + tree.getPageLength());
     debugLog("minHeightPercent: " + minHeightPercent);
-    debugLog("treeBox: " + treeBox.rowHeight);
+    debugLog("tree.rowHeight: " + tree.rowHeight);
     debugLog("count: " + count);
     debugLog("oldHeight: " + oldHeight);
     debugLog("requiredHeight: " + requiredHeight);
     var deltaHeight = requiredHeight - oldHeight;
 
-    var messagesBoxBox = document.getElementById("messagesBox").boxObject;
+    var messagesBoxBox = document.getElementById("messagesBox").getBoundingClientRect();
 
     var newSplitterY = threadPaneSplitterBox.y +
                        deltaHeight;
 
-    oldHeight = messagePaneBox.boxObject.height;
+    oldHeight = messagePaneBox.getBoundingClientRect().height;
     messagePaneBox.removeAttribute("height");
 
     var minSplitterY = messagesBoxBox.y +
@@ -399,7 +398,7 @@ org_mozdev_AutoSlide.slider = function() {
     debugLog("old: "+oldHeight + " new: "+newHeight);
 
     messagePaneBox.setAttribute("height", newHeight);
-    displayDeck.setAttribute("height", displayDeck.boxObject.height);
+    displayDeck.setAttribute("height", displayDeck.getBoundingClientRect().height);
 
     messagePaneBox.setAttribute("flex", "1");
     var messagePaneHBox = document.getElementById("messagepanehbox")
