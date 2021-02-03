@@ -2,14 +2,13 @@
   "manifest_version": 2,
   "name": "AutoSlide",
   "description": "Automatically adjust the size of the thread pane",
-  "version": "0.0.18beta2",
+  "version": "0.0.18beta3",
   "author": "Joachim Herb",
   "homepage_url": "http://autoslide.mozdev.org/",
   "applications": {
     "gecko": {
       "id": "autoslide@mozdev.org",
-      "strict_min_version": "68.0",
-      "strict_max_version": "68.*"
+      "strict_min_version": "78.0"
     }
   },
   "icons": {
@@ -29,5 +28,6 @@
     "scripts": [
       "background.js"
     ]
-  }
+  },
+  "permissions": ["storage"]
 }

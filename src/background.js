@@ -8,10 +8,10 @@ messenger.WindowListener.registerChromeUrl([
   ["locale",  "AutoSlide", "es-MX",  "chrome/AutoSlide/locale/sl/"],
 ]);
 
-messenger.WindowListener.registerOptionsPage("chrome://AutoSlide/content/preferences.xul");
+messenger.WindowListener.registerOptionsPage("chrome://AutoSlide/content/preferences.xhtml");
 
 messenger.WindowListener.registerWindow(
-    "chrome://messenger/content/messenger.xul",
+    "chrome://messenger/content/messenger.xhtml",
     "chrome://AutoSlide/content/messenger.js");
 
 messenger.WindowListener.startListening();
