@@ -357,7 +357,7 @@ org_mozdev_AutoSlide.slider = function() {
     var threadBox = document.getElementById("displayDeck");
 
     if (!threadBox) {
-      threadBox = document.getElementById("threadPaneBox");
+      threadBox = document.getElementById("displayBox");
     }
 
     var oldthreadBoxHeight = threadBox.getBoundingClientRect().height;
